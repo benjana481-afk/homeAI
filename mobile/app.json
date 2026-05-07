@@ -1,0 +1,22 @@
+{
+  "expo": {
+    "name": "HomAI",
+    "slug": "home-design-ai",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "homai",
+    "plugins": ["expo-router"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.homai.app",
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "נדרש גישה לגלריה לבחירת תמונת חדר",
+        "NSCameraUsageDescription": "נדרש גישה למצלמה לצילום החדר"
+      }
+    },
+    "android": {
+      "package": "com.homai.app",
+      "permissions": ["CAMERA", "READ_EXTERNAL_STORAGE"]
+    }
+  }
+}
