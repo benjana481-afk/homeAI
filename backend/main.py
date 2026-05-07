@@ -22,6 +22,7 @@ _allowed_origins = [
     "http://localhost:5173",
     "http://localhost:8081",
     "exp://localhost:8081",
+    "https://frontend-production-7a6b.up.railway.app",
 ]
 _frontend_url = os.getenv("FRONTEND_URL", "")
 if _frontend_url:
