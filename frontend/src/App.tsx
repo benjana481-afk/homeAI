@@ -2,6 +2,7 @@ import { Route, Routes } from "react-router-dom";
 import { AuthProvider } from "./auth/AuthContext";
 import Compare from "./pages/Compare";
 import Home from "./pages/Home";
+import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import MyDesigns from "./pages/MyDesigns";
 import Register from "./pages/Register";
@@ -11,7 +12,8 @@ export default function App() {
   return (
     <AuthProvider>
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<Landing />} />
+        <Route path="/app" element={<Home />} />
         <Route path="/result" element={<Result />} />
         <Route path="/compare" element={<Compare />} />
         <Route path="/login" element={<Login />} />
