@@ -1,7 +1,25 @@
 import asyncio
 import base64
+import io
 
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
+from PIL import Image
+
+try:
+    import pillow_heif
+    pillow_heif.register_heif_opener()
+except ImportError:
+    pass
+
+
+def _to_jpeg_base64(raw: bytes) -> str:
+    """Convert any image format (including HEIC) to JPEG base64."""
+    img = Image.open(io.BytesIO(raw))
+    if img.mode not in ("RGB", "L"):
+        img = img.convert("RGB")
+    buf = io.BytesIO()
+    img.save(buf, format="JPEG", quality=92)
+    return base64.b64encode(buf.getvalue()).decode("utf-8")
 
 from models.schemas import (
     DESIGN_STYLES,
@@ -64,7 +82,10 @@ async def generate_design(
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Could not process video: {str(e)}")
     else:
-        images_base64 = [base64.b64encode(content).decode("utf-8")]
+        try:
+            images_base64 = [_to_jpeg_base64(content)]
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Could not process image: {str(e)}")
 
     try:
         analysis, redesign_path, design_brief = await analyze_and_generate_design(
