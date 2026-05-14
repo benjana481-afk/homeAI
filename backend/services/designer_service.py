@@ -117,6 +117,25 @@ Return only valid JSON, no markdown."""
     return full_analysis, sketch_path
 
 
+def _rtl(text: str) -> str:
+    """Reverse Hebrew text for RTL display in PDF."""
+    if not text:
+        return ""
+    try:
+        from bidi.algorithm import get_display
+        return get_display(text)
+    except Exception:
+        pass
+    try:
+        import arabic_reshaper
+        from bidi.algorithm import get_display
+        return get_display(arabic_reshaper.reshape(text))
+    except Exception:
+        pass
+    # Fallback: just reverse words (crude but readable)
+    return " ".join(text.split()[::-1])
+
+
 def generate_pdf(
     client_name: str,
     room_type: str,
@@ -125,13 +144,8 @@ def generate_pdf(
 ) -> bytes:
     """Generate a PDF with approved sketches. Returns PDF bytes."""
     from fpdf import FPDF
-    try:
-        from bidi.algorithm import get_display
-        def rtl(text: str) -> str:
-            return get_display(text) if text else ""
-    except ImportError:
-        def rtl(text: str) -> str:
-            return text or ""
+
+    rtl = _rtl
 
     class PDF(FPDF):
         def footer(self):
@@ -143,11 +157,19 @@ def generate_pdf(
     pdf = PDF(orientation="P", unit="mm", format="A4")
     pdf.set_auto_page_break(auto=True, margin=15)
 
+    font_loaded = False
     if FONT_PATH.exists():
-        pdf.add_font("Hebrew", "", str(FONT_PATH))
-        fn = "Hebrew"
-    else:
+        try:
+            pdf.add_font("Hebrew", "", str(FONT_PATH))
+            fn = "Hebrew"
+            font_loaded = True
+        except Exception:
+            pass
+
+    if not font_loaded:
         fn = "Helvetica"
+        # Without Hebrew font, show text as-is (will be garbled but PDF will work)
+        rtl = lambda t: t or ""
 
     margin = 18
     cw = 210 - 2 * margin
