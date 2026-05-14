@@ -31,6 +31,9 @@ export default function Header() {
             <Link to="/my-designs" className="btn-secondary text-sm">
               🎨 העיצובים שלי
             </Link>
+            <Link to="/designer" className="btn-secondary text-sm">
+              ✏️ Studio
+            </Link>
             <span className="hidden md:block text-sm text-slate-500" dir="ltr">{email}</span>
             <button onClick={onLogout} className="text-sm text-slate-500 hover:text-slate-700">
               יציאה

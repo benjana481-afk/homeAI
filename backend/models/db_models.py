@@ -1,4 +1,4 @@
-"""SQLAlchemy ORM models — User and Design."""
+"""SQLAlchemy ORM models — User, Design, DesignerProject, DesignerSketch."""
 from datetime import datetime
 
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Text, Boolean
@@ -16,6 +16,7 @@ class User(Base):
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
     designs = relationship("Design", back_populates="user", cascade="all, delete-orphan")
+    designer_projects = relationship("DesignerProject", back_populates="user", cascade="all, delete-orphan")
 
 
 class Design(Base):
@@ -44,3 +45,35 @@ class Design(Base):
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False, index=True)
 
     user = relationship("User", back_populates="designs")
+
+
+class DesignerProject(Base):
+    __tablename__ = "designer_projects"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    client_name = Column(String, nullable=False)
+    room_type = Column(String, nullable=False)
+    notes = Column(Text, nullable=True, default="")
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+    sketches = relationship(
+        "DesignerSketch", back_populates="project",
+        cascade="all, delete-orphan",
+        order_by="DesignerSketch.created_at",
+    )
+    user = relationship("User", back_populates="designer_projects")
+
+
+class DesignerSketch(Base):
+    __tablename__ = "designer_sketches"
+
+    id = Column(Integer, primary_key=True, index=True)
+    project_id = Column(Integer, ForeignKey("designer_projects.id"), nullable=False, index=True)
+    image_path = Column(String, nullable=False)
+    analysis = Column(Text, nullable=False, default="")
+    notes = Column(Text, nullable=True, default="")
+    approved = Column(Boolean, default=False, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+    project = relationship("DesignerProject", back_populates="sketches")

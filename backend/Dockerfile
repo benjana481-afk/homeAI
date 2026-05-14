@@ -2,7 +2,12 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y gcc g++ && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y gcc g++ wget ca-certificates && \
+    mkdir -p /app/fonts && \
+    wget -q -O /app/fonts/NotoSansHebrew.ttf \
+        "https://github.com/notofonts/noto-fonts/raw/main/hinted/ttf/NotoSansHebrew/NotoSansHebrew-Regular.ttf" || \
+    echo "Font download failed, PDF will use fallback font" && \
+    rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt

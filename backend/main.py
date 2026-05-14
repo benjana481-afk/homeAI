@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from database import init_db
-from routers import auth, design, designs, shopping
+from routers import auth, design, designer, designs, shopping
 from services.storage_service import UPLOADS_DIR, ensure_dirs
 
 app = FastAPI(
@@ -54,6 +54,7 @@ app.include_router(design.router)
 app.include_router(shopping.router)
 app.include_router(auth.router)
 app.include_router(designs.router)
+app.include_router(designer.router)
 
 
 @app.get("/health")

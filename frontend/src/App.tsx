@@ -1,6 +1,8 @@
 import { Route, Routes } from "react-router-dom";
 import { AuthProvider } from "./auth/AuthContext";
 import Compare from "./pages/Compare";
+import DesignerProject from "./pages/DesignerProject";
+import DesignerProjects from "./pages/DesignerProjects";
 import Home from "./pages/Home";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
@@ -19,6 +21,8 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/my-designs" element={<MyDesigns />} />
+        <Route path="/designer" element={<DesignerProjects />} />
+        <Route path="/designer/:id" element={<DesignerProject />} />
       </Routes>
     </AuthProvider>
   );

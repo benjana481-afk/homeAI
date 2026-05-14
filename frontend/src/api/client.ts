@@ -204,6 +204,89 @@ export async function generateDesignBase64(payload: {
   return response.data;
 }
 
+// ---------- Designer Studio ----------
+
+export interface DesignerSketchItem {
+  id: number;
+  project_id: number;
+  image_url: string;
+  analysis: string;
+  notes: string;
+  approved: boolean;
+  created_at: string;
+}
+
+export interface DesignerProjectSummary {
+  id: number;
+  client_name: string;
+  room_type: string;
+  notes: string;
+  created_at: string;
+  total_sketches: number;
+  approved_count: number;
+}
+
+export interface DesignerProjectDetail extends DesignerProjectSummary {
+  sketches: DesignerSketchItem[];
+}
+
+export async function listDesignerProjects(): Promise<DesignerProjectSummary[]> {
+  const res = await api.get<DesignerProjectSummary[]>("/designer/projects");
+  return res.data;
+}
+
+export async function createDesignerProject(
+  clientName: string, roomType: string, notes: string
+): Promise<DesignerProjectDetail> {
+  const form = new FormData();
+  form.append("client_name", clientName);
+  form.append("room_type", roomType);
+  form.append("notes", notes);
+  const res = await api.post<DesignerProjectDetail>("/designer/projects", form);
+  return res.data;
+}
+
+export async function getDesignerProject(id: number): Promise<DesignerProjectDetail> {
+  const res = await api.get<DesignerProjectDetail>(`/designer/projects/${id}`);
+  return res.data;
+}
+
+export async function deleteDesignerProject(id: number): Promise<void> {
+  await api.delete(`/designer/projects/${id}`);
+}
+
+export async function generateDesignerSketch(
+  projectId: number, photo: File, notes: string
+): Promise<DesignerSketchItem> {
+  const form = new FormData();
+  form.append("photo", photo);
+  form.append("notes", notes);
+  const res = await api.post<DesignerSketchItem>(
+    `/designer/projects/${projectId}/sketches`, form,
+    { headers: { "Content-Type": "multipart/form-data" } }
+  );
+  return res.data;
+}
+
+export async function toggleApproveSketch(sketchId: number): Promise<DesignerSketchItem> {
+  const res = await api.patch<DesignerSketchItem>(`/designer/sketches/${sketchId}/approve`);
+  return res.data;
+}
+
+export async function deleteDesignerSketch(sketchId: number): Promise<void> {
+  await api.delete(`/designer/sketches/${sketchId}`);
+}
+
+export async function downloadDesignerPdf(projectId: number, clientName: string): Promise<void> {
+  const res = await api.get(`/designer/projects/${projectId}/pdf`, { responseType: "blob" });
+  const url = URL.createObjectURL(res.data);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `design_${clientName.replace(/\s+/g, "_")}_${projectId}.pdf`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 // ---------- Compare Styles (שלב 4) ----------
 
 export interface CompareResultItem {
