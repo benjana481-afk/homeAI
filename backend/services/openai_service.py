@@ -142,7 +142,7 @@ Return only valid JSON, no markdown."""
                 ],
             }
         ],
-        max_tokens=1000,
+        max_tokens=600,
         response_format={"type": "json_object"},
     )
 
@@ -168,7 +168,7 @@ Return only valid JSON, no markdown."""
         model="gpt-image-1",
         image=("room.jpg", first_frame_bytes, "image/jpeg"),
         prompt=edit_prompt[:4000],
-        size="1536x1024",
+        size="1024x1024",
         n=1,
     )
 
@@ -235,9 +235,9 @@ Rules:
 - Return only valid JSON, no markdown"""
 
     response = await client.chat.completions.create(
-        model="gpt-4o",
+        model="gpt-4o-mini",
         messages=[{"role": "user", "content": shopping_prompt}],
-        max_tokens=2000,
+        max_tokens=1500,
         response_format={"type": "json_object"},
     )
 
@@ -246,38 +246,10 @@ Rules:
 
     raw_items = data.get("items", [])
 
-    # For each item, do a real web search (in parallel) to find a specific product URL.
-    # Falls back to Google site: search if the web search fails.
-    product_urls = await asyncio.gather(
-        *[
-            find_product_url(
-                name=it.get("name", ""),
-                description=it.get("description", ""),
-                store=it.get("store", "IKEA Israel"),
-                search_query=it.get("search_query") or it.get("name", ""),
-            )
-            for it in raw_items
-        ],
-        return_exceptions=True,
-    )
-
-    # Fetch og:image for each found URL in parallel (best-effort)
-    image_urls = await asyncio.gather(
-        *[fetch_product_image(u if not isinstance(u, Exception) else None) for u in product_urls],
-        return_exceptions=True,
-    )
-
     items: list[ShoppingItem] = []
-    for item_data, found_url, image_url in zip(raw_items, product_urls, image_urls):
+    for item_data in raw_items:
         store = item_data.get("store", "IKEA Israel")
         search_query = item_data.get("search_query") or item_data.get("name", "")
-
-        if isinstance(found_url, Exception) or not found_url:
-            store_url = build_store_search_url(store, search_query)
-        else:
-            store_url = found_url
-
-        clean_image = image_url if isinstance(image_url, str) else None
 
         items.append(
             ShoppingItem(
@@ -285,12 +257,12 @@ Rules:
                 description=item_data.get("description", ""),
                 category=item_data.get("category", "decor"),
                 store=store,
-                store_url=store_url,
+                store_url=build_store_search_url(store, search_query),
                 google_shopping_url=build_google_shopping_url(search_query),
                 search_query=search_query,
                 estimated_price_nis=int(item_data.get("estimated_price_nis", 0)),
                 priority=item_data.get("priority", "recommended"),
-                image_url=clean_image,
+                image_url=None,
             )
         )
 
@@ -427,7 +399,7 @@ async def edit_design(
         model="gpt-image-1",
         image=("redesign.png", image_bytes, "image/png"),
         prompt=full_prompt[:4000],
-        size="1536x1024",
+        size="1024x1024",
         n=1,
     )
 
